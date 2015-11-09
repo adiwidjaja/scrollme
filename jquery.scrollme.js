@@ -214,8 +214,8 @@ var scrollme = ( function( $ )
 
 			if( _this.viewport_top_previous != _this.viewport_top )
 			{
-			_this.update_elements_in_view();
-			_this.animate();
+				_this.update_elements_in_view();
+				_this.animate();
 			}
 
 			_this.viewport_top_previous = _this.viewport_top;
@@ -249,19 +249,19 @@ var scrollme = ( function( $ )
 				{
 					case 'view' : // Maintained for backwards compatibility
 					case 'span' :
-					var start = element.top - _this.viewport_height;
-					var end = element.bottom;
-					break;
+						var start = element.top - _this.viewport_height;
+						var end = element.bottom;
+						break;
 
 					case 'exit' :
-					var start = element.bottom - _this.viewport_height;
-					var end = element.bottom;
-					break;
+						var start = element.bottom - _this.viewport_height;
+						var end = element.bottom;
+						break;
 
 					default :
-					var start = element.top - _this.viewport_height;
-					var end = element.top;
-					break;
+						var start = element.top - _this.viewport_height;
+						var end = element.top;
+						break;
 				}
 
 				// Crop boundaries
@@ -402,7 +402,7 @@ var scrollme = ( function( $ )
 		{
 			if ( ( _this.elements[i].top < _this.viewport_bottom ) && ( _this.elements[i].bottom > _this.viewport_top ) )
 			{
-			_this.elements_in_view.push( _this.elements[i] );
+				_this.elements_in_view.push( _this.elements[i] );
 			}
 		}
 	}
