@@ -47,7 +47,7 @@
 
 	_this.property_defaults =
 	{
-		'opacity' : 0, //Make configurable or look at the element!
+		'opacity' : 1, //Make configurable or look at the element!
 		'translatex' : 0,
 		'translatey' : 0,
 		'translatez' : 0,
@@ -205,6 +205,7 @@
 				var properties = {};
 
 				if( effect.element.is( '[data-opacity]' ) )    properties.opacity    = effect.element.data( 'opacity' );
+                if( effect.element.is( '[data-startopacity]' ) )    properties.startopacity    = effect.element.data( 'startopacity' );
 				if( effect.element.is( '[data-translatex]' ) ) properties.translatex = effect.element.data( 'translatex' );
 				if( effect.element.is( '[data-translatey]' ) ) properties.translatey = effect.element.data( 'translatey' );
 				if( effect.element.is( '[data-translatez]' ) ) properties.translatez = effect.element.data( 'translatez' );
@@ -398,6 +399,11 @@
 	_this.animate_value = function( scroll , scroll_eased , from , to , effect , property )
 	{
 		var value_default = _this.property_defaults[ property ];
+
+        if(property == 'opacity') {
+            if('startopacity' in effect.properties)
+                value_default = effect.properties.startopacity;
+        }
 
 		// Return default value if property is not animated
 
