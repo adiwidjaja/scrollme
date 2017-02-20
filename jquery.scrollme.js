@@ -4,7 +4,18 @@
 // http://scrollme.nckprsn.com
 // ----------------------------------------------------------------------------------------------------
 
-var scrollme = ( function( $ )
+(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery'], factory);
+  } else if (typeof module === 'object' && module.exports) {
+    // CommonJS
+    factory(require('jquery'));
+  } else {
+    // Browser globals
+    factory(jQuery);
+  }
+}( function( $ )
 {
 	// ----------------------------------------------------------------------------------------------------
 	// ScrollMe object
@@ -18,20 +29,25 @@ var scrollme = ( function( $ )
 	var $window = $( window );
 
 	_this.body_height = 0;
+    _this.body_width = 0;
 
 	_this.viewport_height = 0;
+    _this.viewport_width = 0;
 
 	_this.viewport_top = 0;
 	_this.viewport_bottom = 0;
+    _this.viewport_left = 0;
+    _this.viewport_right = 0;
 
 	_this.viewport_top_previous = -1;
+    _this.viewport_left_previous = -1;
 
 	_this.elements = [];
 	_this.elements_in_view = [];
 
 	_this.property_defaults =
 	{
-		'opacity' : 1,
+		'opacity' : 0, //Make configurable or look at the element!
 		'translatex' : 0,
 		'translatey' : 0,
 		'translatez' : 0,
@@ -101,8 +117,13 @@ var scrollme = ( function( $ )
 	// ----------------------------------------------------------------------------------------------------
 	// Initialisation
 
-	_this.init = function()
+	_this.init = function(options)
 	{
+
+        var opts = $.extend( {}, {direction:'vertical'}, options );
+
+        _this.direction = opts.direction;
+
 		// Cancel if initialisation conditions not met
 
 		if( !_this.init_if() ) return false;
@@ -126,6 +147,8 @@ var scrollme = ( function( $ )
 		// Start animating
 
 		setInterval( _this.update , _this.update_interval );
+
+        // console.log("HUHU");
 
 		return true;
 	}
@@ -213,13 +236,23 @@ var scrollme = ( function( $ )
 		{
 			_this.update_viewport_position();
 
-			if( _this.viewport_top_previous != _this.viewport_top )
-			{
-				_this.update_elements_in_view();
-				_this.animate();
-			}
+            if(_this.direction == 'vertical') {
+                if( _this.viewport_top_previous != _this.viewport_top )
+                {
+                    _this.update_elements_in_view();
+                    _this.animate();
+                }
 
-			_this.viewport_top_previous = _this.viewport_top;
+                _this.viewport_top_previous = _this.viewport_top;
+            } else {
+                if( _this.viewport_left_previous != _this.viewport_left )
+                {
+                    _this.update_elements_in_view();
+                    _this.animate();
+                }
+
+                _this.viewport_left_previous = _this.viewport_left;
+            }
 		});
 	}
 
@@ -240,43 +273,78 @@ var scrollme = ( function( $ )
 
 			var effects_length = element.effects.length;
 
-			for( var e=0 ; e<effects_length ; e++ )
-			{
-				var effect = element.effects[e];
+            for( var e=0 ; e<effects_length ; e++ )
+            {
+                if(_this.direction == 'vertical') {
+                    var effect = element.effects[e];
 
-				// Get effect animation boundaries
+                    // Get effect animation boundaries
 
-				switch( effect.when )
-				{
-					case 'view' : // Maintained for backwards compatibility
-					case 'span' :
-						var start = element.top - _this.viewport_height;
-						var end = element.bottom;
-						break;
+                    switch( effect.when )
+                    {
+                        case 'view' : // Maintained for backwards compatibility
+                        case 'span' :
+                            var start = element.top - _this.viewport_height;
+                            var end = element.bottom;
+                            break;
 
-					case 'exit' :
-						var start = element.bottom - _this.viewport_height;
-						var end = element.bottom;
-						break;
+                        case 'exit' :
+                            var start = element.bottom - _this.viewport_height;
+                            var end = element.bottom;
+                            break;
 
-					default :
-						var start = element.top - _this.viewport_height;
-						var end = element.top;
-						break;
-				}
+                        default :
+                            var start = element.top - _this.viewport_height;
+                            var end = element.top;
+                            break;
+                    }
 
-				// Crop boundaries
+                    // Crop boundaries
 
-				if( effect.crop )
-				{
-					if( start < 0 ) start = 0;
-					if( end > ( _this.body_height - _this.viewport_height ) ) end = _this.body_height - _this.viewport_height;
-				}
+                    if( effect.crop )
+                    {
+                        if( start < 0 ) start = 0;
+                        if( end > ( _this.body_height - _this.viewport_height ) ) end = _this.body_height - _this.viewport_height;
+                    }
 
-				// Get scroll position of reference selector
+                    // Get scroll position of reference selector
 
-				var scroll = ( _this.viewport_top - start ) / ( end - start );
+                    var scroll = ( _this.viewport_top - start ) / ( end - start );
+                } else {
+                    var effect = element.effects[e];
 
+                    // Get effect animation boundaries
+
+                    switch( effect.when )
+                    {
+                        case 'view' : // Maintained for backwards compatibility
+                        case 'span' :
+                            var start = element.left - _this.viewport_width;
+                            var end = element.right;
+                            break;
+
+                        case 'exit' :
+                            var start = element.right - _this.viewport_width;
+                            var end = element.right;
+                            break;
+
+                        default :
+                            var start = element.left - _this.viewport_width;
+                            var end = element.left;
+                            break;
+                    }
+
+                    // Crop boundaries
+
+                    if( effect.crop )
+                    {
+                        if( start < 0 ) start = 0;
+                        if( end > ( _this.body_width - _this.viewport_width ) ) end = _this.body_width - _this.viewport_width;
+                    }
+
+                    // Get scroll position of reference selector
+
+                    var scroll = ( _this.viewport_left - start ) / ( end - start );                }
 				// Get relative scroll position for effect
 
 				var from = effect[ 'from' ];
@@ -388,6 +456,13 @@ var scrollme = ( function( $ )
 	{
 		_this.viewport_top = $window.scrollTop();
 		_this.viewport_bottom = _this.viewport_top + _this.viewport_height;
+
+        _this.viewport_left = $window.scrollLeft();
+        _this.viewport_right = _this.viewport_left + _this.viewport_width;
+
+        // console.log($window.scrollLeft());
+        // console.log($document);
+        // console.log(_this.viewport_right);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -398,14 +473,26 @@ var scrollme = ( function( $ )
 		_this.elements_in_view = [];
 
 		var elements_length = _this.elements.length;
-
 		for( var i=0 ; i<elements_length ; i++ )
 		{
-			if ( ( _this.elements[i].top < _this.viewport_bottom ) && ( _this.elements[i].bottom > _this.viewport_top ) )
-			{
-				_this.elements_in_view.push( _this.elements[i] );
-			}
+            if(_this.direction == 'vertical') {
+                if ( ( _this.elements[i].top < _this.viewport_bottom ) && ( _this.elements[i].bottom > _this.viewport_top ) )
+                {
+                    _this.elements_in_view.push( _this.elements[i] );
+                }
+            } else {
+                console.log("test");
+                console.log(( _this.elements[i].left ));
+                console.log(_this.viewport_right);
+                console.log(( _this.elements[i].right ));
+                console.log(_this.viewport_left);
+                if ( ( _this.elements[i].left < _this.viewport_right ) && ( _this.elements[i].right > _this.viewport_left ) )
+                {
+                    _this.elements_in_view.push( _this.elements[i] );
+                }
+            }
 		}
+        // console.log(_this.elements_in_view);
 	}
 
 	// ----------------------------------------------------------------------------------------------------
@@ -416,7 +503,7 @@ var scrollme = ( function( $ )
 		// Update viewport/element data
 
 		_this.update_viewport();
-		_this.update_element_heights();
+		_this.update_element_sizes();
 
 		// Update display
 
@@ -432,30 +519,36 @@ var scrollme = ( function( $ )
 	{
 		_this.body_height = $document.height();
 		_this.viewport_height = $window.height();
+        _this.body_width = $document.width();
+        _this.viewport_width = $window.width();
 	}
 
 	// ----------------------------------------------------------------------------------------------------
 	// Update height of animated elements
 
-	_this.update_element_heights = function()
+	_this.update_element_sizes = function()
 	{
 		var elements_length = _this.elements.length;
 
 		for( var i=0 ; i<elements_length ; i++ )
 		{
 			var element_height = _this.elements[i].element.outerHeight();
+            var element_width = _this.elements[i].element.outerWidth();
 			var position = _this.elements[i].element.offset();
 
 			_this.elements[i].height = element_height;
+            _this.elements[i].width = element_width;
 			_this.elements[i].top = position.top;
+            _this.elements[i].left = position.left;
 			_this.elements[i].bottom = position.top + element_height;
+            _this.elements[i].right = position.left + element_width;
 		}
 	}
 
 	// ----------------------------------------------------------------------------------------------------
 	// Bind initialisation
 
-	$document.one( _this.init_events.join( ' ' ) , function(){ _this.init(); });
+	// $document.one( _this.init_events.join( ' ' ) , function(){ _this.init(); });
 
 	// ----------------------------------------------------------------------------------------------------
 
@@ -463,4 +556,4 @@ var scrollme = ( function( $ )
 
 	// ----------------------------------------------------------------------------------------------------
 
-})( jQuery );
+}));
