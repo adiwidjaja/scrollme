@@ -47,7 +47,7 @@
 
 	_this.property_defaults =
 	{
-		'opacity' : 1, //Make configurable or look at the element!
+		'opacity' : 1,
 		'translatex' : 0,
 		'translatey' : 0,
 		'translatez' : 0,
