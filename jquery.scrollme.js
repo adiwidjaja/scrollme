@@ -487,11 +487,11 @@
                     _this.elements_in_view.push( _this.elements[i] );
                 }
             } else {
-                console.log("test");
-                console.log(( _this.elements[i].left ));
-                console.log(_this.viewport_right);
-                console.log(( _this.elements[i].right ));
-                console.log(_this.viewport_left);
+                // console.log("test");
+                // console.log(( _this.elements[i].left ));
+                // console.log(_this.viewport_right);
+                // console.log(( _this.elements[i].right ));
+                // console.log(_this.viewport_left);
                 if ( ( _this.elements[i].left < _this.viewport_right ) && ( _this.elements[i].right > _this.viewport_left ) )
                 {
                     _this.elements_in_view.push( _this.elements[i] );
