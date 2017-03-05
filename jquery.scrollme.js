@@ -492,9 +492,24 @@
                 // console.log(_this.viewport_right);
                 // console.log(( _this.elements[i].right ));
                 // console.log(_this.viewport_left);
-                if ( ( _this.elements[i].left < _this.viewport_right ) && ( _this.elements[i].right > _this.viewport_left ) )
-                {
+                if ( _this.elements[i].left > _this.viewport_right ) {
+                    //Before
+                    _this.elements[i].element.addClass("scrollme--before");
+                } else {
+                    _this.elements[i].element.removeClass("scrollme--before");
+                }
+                if ( ( _this.elements[i].left < _this.viewport_right ) && ( _this.elements[i].right > _this.viewport_left ) ) {
                     _this.elements_in_view.push( _this.elements[i] );
+                    _this.elements[i].element.addClass("scrollme--active");
+                } else {
+                    _this.elements[i].element.removeClass("scrollme--active");
+                }
+                if ( (_this.elements[i].left <= _this.viewport_left) && !$('.scrollme--active').not(_this.elements[i].element).length ) {
+                    //After
+                    _this.elements[i].element.addClass("scrollme--complete");
+                    //Todo: Not if something else is active
+                } else {
+                    _this.elements[i].element.removeClass("scrollme--complete");
                 }
             }
 		}
