@@ -65,6 +65,8 @@
 
 	_this.update_interval = 10;
 
+    _this.fitTimeout = 0;
+
 	// Easing functions
 
 	_this.easing_functions =
@@ -120,9 +122,14 @@
 	_this.init = function(options)
 	{
 
-        var opts = $.extend( {}, {direction:'vertical'}, options );
+        var opts = $.extend( {}, {
+            direction:'vertical',
+            update: function() {}
+        }, options );
 
         _this.direction = opts.direction;
+        _this.updateCallback = opts.update;
+        _this.options = opts;
 
 		// Cancel if initialisation conditions not met
 
@@ -254,8 +261,11 @@
 
                 _this.viewport_left_previous = _this.viewport_left;
             }
-		});
+
+            _this.updateCallback();
+        });
 	}
+
 
 	// ----------------------------------------------------------------------------------------------------
 	// Animate stuff
@@ -353,7 +363,15 @@
 
 				var length = to - from;
 
+                if( scroll < from && forwards ) { scroll = from; }
+                if( scroll > to && forwards ) { scroll = to; }
+
+                // if( scroll > from && !forwards ) { scroll = from; }
+                // if( scroll < to && !forwards ) { scroll = to; }
+
 				var scroll_relative = ( scroll - from ) / length;
+
+                var forwards = ( to > from ) ? true : false;
 
 				// Apply easing
 
@@ -487,30 +505,65 @@
                     _this.elements_in_view.push( _this.elements[i] );
                 }
             } else {
-                // console.log("test");
-                // console.log(( _this.elements[i].left ));
-                // console.log(_this.viewport_right);
-                // console.log(( _this.elements[i].right ));
-                // console.log(_this.viewport_left);
                 if ( _this.elements[i].left > _this.viewport_right ) {
                     //Before
+                    _this.elements[i].element.removeClass("scrollme--after scrollme--active scrollme--over scrollme--complete");
                     _this.elements[i].element.addClass("scrollme--before");
-                } else {
-                    _this.elements[i].element.removeClass("scrollme--before");
-                }
-                if ( ( _this.elements[i].left < _this.viewport_right ) && ( _this.elements[i].right > _this.viewport_left ) ) {
+                } else if(( _this.elements[i].left < _this.viewport_right ) && ( _this.elements[i].right > _this.viewport_left )) {
+                    //Visible
                     _this.elements_in_view.push( _this.elements[i] );
+                    _this.elements[i].element.removeClass("scrollme--before scrollme--after");
                     _this.elements[i].element.addClass("scrollme--active");
+
+                    if(Math.floor(_this.elements[i].left) <= Math.floor(_this.viewport_left)) {
+                        //Complete (left side touches)
+                        if(Math.floor(_this.elements[i].right) <= Math.floor(_this.viewport_right)) {
+                            //Over (right side touches)
+                            _this.elements[i].element.removeClass("scrollme--complete");
+                            _this.elements[i].element.addClass("scrollme--over");
+                        } else {
+                            _this.elements[i].element.removeClass("scrollme--over");
+                            _this.elements[i].element.addClass("scrollme--complete");
+                        }
+                    } else {
+                        //Incomplete (but active)
+                        _this.elements[i].element.removeClass("scrollme--complete scrollme--over");
+                    }
+
                 } else {
-                    _this.elements[i].element.removeClass("scrollme--active");
-                }
-                if ( (_this.elements[i].left <= _this.viewport_left) && !$('.scrollme--active').not(_this.elements[i].element).length ) {
                     //After
-                    _this.elements[i].element.addClass("scrollme--complete");
-                    //Todo: Not if something else is active
-                } else {
-                    _this.elements[i].element.removeClass("scrollme--complete");
+                    _this.elements[i].element.removeClass("scrollme--before scrollme--active scrollme--over scrollme--complete");
+                    _this.elements[i].element.addClass("scrollme--after");
                 }
+                // } else {
+                //     _this.elements[i].element.removeClass("scrollme--before");
+                // }
+
+                // if ( ( _this.elements[i].left < _this.viewport_right ) && ( _this.elements[i].right > _this.viewport_left ) ) {
+                //     _this.elements_in_view.push( _this.elements[i] );
+                //     _this.elements[i].element.addClass("scrollme--active");
+                // } else {
+                //     _this.elements[i].element.removeClass("scrollme--active");
+                //     $(".wasfixed", _this.elements[i].element).removeClass("wasfixed");
+                // }
+
+                // if ( (Math.abs(_this.elements[i].left) <= _this.viewport_left) && !$('.scrollme--active').not(_this.elements[i].element).length ) {
+                //     //After
+                //     _this.elements[i].element.addClass("scrollme--complete");
+                //     $(".fixme", _this.elements[i].element).removeClass("wasfixed").addClass("fixed")
+                // } else {
+                //     _this.elements[i].element.removeClass("scrollme--complete");
+                //     $(".fixme", _this.elements[i].element).each(function() {
+                //         var fixed = $(this).removeClass("fixed")
+                //         if(_this.elements[i].left <= _this.viewport_left) {
+                //             fixed.addClass("wasfixed");
+                //         } else {
+                //             fixed.removeClass("wasfixed");
+                //         }
+                //         // fixed.css({'left':_this.viewport_left - _this.elements[i].left});
+                //     })
+                // }
+
             }
 		}
         // console.log(_this.elements_in_view);
